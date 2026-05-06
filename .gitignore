@@ -1,0 +1,21 @@
+# Local sync state (per-user, contains synced doc IDs but no secrets)
+.sync_state.json
+
+# Workspace-internal docs (not for public repo)
+AGENTS.md
+RUNBOOK.md
+CLAUDE.md
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs (if anyone redirects them into the repo dir)
+*.log
+
+# Editor
+.vscode/
+.idea/
