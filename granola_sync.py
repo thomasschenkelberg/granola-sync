@@ -29,6 +29,10 @@ STATE_FILE = Path(
     os.environ.get("GRANOLA_SYNC_STATE_FILE", str(SCRIPT_DIR / ".sync_state.json"))
 ).expanduser()
 LOG_FILE = Path(os.environ.get("GRANOLA_SYNC_LOG_FILE", "/tmp/granola-sync.log")).expanduser()
+TOKEN_WARNING_MARKER = Path(
+    os.environ.get("GRANOLA_SYNC_TOKEN_WARNING_MARKER", "/tmp/granola-sync-token-warning-last.txt")
+).expanduser()
+TOKEN_WARNING_INTERVAL_SECONDS = int(os.environ.get("GRANOLA_SYNC_TOKEN_WARNING_INTERVAL_SECONDS", str(6 * 3600)))
 
 API_BASE = "https://api.granola.ai"
 DOCUMENTS_URL = f"{API_BASE}/v2/get-documents"
@@ -70,10 +74,22 @@ def get_access_token() -> str | None:
         expires_in = tokens.get("expires_in", 0)
         now_ms = int(time.time() * 1000)
         if now_ms > obtained_at_ms + (expires_in * 1000):
-            log.warning(
-                "Token expired. Open Granola app to refresh. "
-                "Skipping this sync run."
-            )
+            # Throttle the warning so a stale token doesn't spam every 15-min run.
+            now_s = int(time.time())
+            last_warned = 0
+            try:
+                last_warned = int(TOKEN_WARNING_MARKER.read_text().strip())
+            except (FileNotFoundError, ValueError, OSError):
+                pass
+            if now_s - last_warned >= TOKEN_WARNING_INTERVAL_SECONDS:
+                log.warning(
+                    "Token expired. Open Granola app to refresh. "
+                    "Skipping this sync run."
+                )
+                try:
+                    TOKEN_WARNING_MARKER.write_text(str(now_s))
+                except OSError:
+                    pass
             return None
 
         return tokens["access_token"]
