@@ -17,6 +17,10 @@ from pathlib import Path
 
 # --- Configuration ---
 
+# As of mid-2026 Granola writes auth to stored-accounts.json. supabase.json is a
+# legacy file from older app versions and is no longer updated for new sign-ins.
+# We try the new file first, then fall back to the legacy file for older installs.
+GRANOLA_STORED_ACCOUNTS = Path.home() / "Library/Application Support/Granola/stored-accounts.json"
 GRANOLA_CREDENTIALS = Path.home() / "Library/Application Support/Granola/supabase.json"
 
 # Target directory is configurable via env var. Default = ~/Documents/Granola Meetings
@@ -63,39 +67,63 @@ log = logging.getLogger("granola-sync")
 # --- Auth ---
 
 
+def _load_tokens_from_stored_accounts() -> dict | None:
+    """Parse the new stored-accounts.json format (mid-2026+)."""
+    data = json.loads(GRANOLA_STORED_ACCOUNTS.read_text())
+    accounts = json.loads(data["accounts"])
+    if not accounts:
+        raise KeyError("stored-accounts.json has no accounts")
+    return json.loads(accounts[0]["tokens"])
+
+
+def _load_tokens_from_supabase_json() -> dict | None:
+    """Parse the legacy supabase.json format."""
+    data = json.loads(GRANOLA_CREDENTIALS.read_text())
+    return json.loads(data["workos_tokens"])
+
+
 def get_access_token() -> str | None:
     """Read the current access token from Granola's local credential store."""
-    try:
-        data = json.loads(GRANOLA_CREDENTIALS.read_text())
-        tokens = json.loads(data["workos_tokens"])
-
-        # Check expiry
-        obtained_at_ms = tokens.get("obtained_at", 0)
-        expires_in = tokens.get("expires_in", 0)
-        now_ms = int(time.time() * 1000)
-        if now_ms > obtained_at_ms + (expires_in * 1000):
-            # Throttle the warning so a stale token doesn't spam every 15-min run.
-            now_s = int(time.time())
-            last_warned = 0
-            try:
-                last_warned = int(TOKEN_WARNING_MARKER.read_text().strip())
-            except (FileNotFoundError, ValueError, OSError):
-                pass
-            if now_s - last_warned >= TOKEN_WARNING_INTERVAL_SECONDS:
-                log.warning(
-                    "Token expired. Open Granola app to refresh. "
-                    "Skipping this sync run."
-                )
-                try:
-                    TOKEN_WARNING_MARKER.write_text(str(now_s))
-                except OSError:
-                    pass
+    tokens = None
+    source = None
+    if GRANOLA_STORED_ACCOUNTS.exists():
+        try:
+            tokens = _load_tokens_from_stored_accounts()
+            source = GRANOLA_STORED_ACCOUNTS.name
+        except (KeyError, IndexError, json.JSONDecodeError) as e:
+            log.warning("%s present but unreadable (%s); trying legacy file", GRANOLA_STORED_ACCOUNTS.name, e)
+    if tokens is None:
+        try:
+            tokens = _load_tokens_from_supabase_json()
+            source = GRANOLA_CREDENTIALS.name
+        except (FileNotFoundError, KeyError, json.JSONDecodeError) as e:
+            log.error("Failed to read Granola credentials: %s", e)
             return None
 
-        return tokens["access_token"]
-    except (FileNotFoundError, KeyError, json.JSONDecodeError) as e:
-        log.error("Failed to read Granola credentials: %s", e)
+    obtained_at_ms = tokens.get("obtained_at", 0)
+    expires_in = tokens.get("expires_in", 0)
+    now_ms = int(time.time() * 1000)
+    if now_ms > obtained_at_ms + (expires_in * 1000):
+        # Throttle the warning so a stale token doesn't spam every 15-min run.
+        now_s = int(time.time())
+        last_warned = 0
+        try:
+            last_warned = int(TOKEN_WARNING_MARKER.read_text().strip())
+        except (FileNotFoundError, ValueError, OSError):
+            pass
+        if now_s - last_warned >= TOKEN_WARNING_INTERVAL_SECONDS:
+            log.warning(
+                "Token expired (source: %s). Open Granola app to refresh. "
+                "Skipping this sync run.",
+                source,
+            )
+            try:
+                TOKEN_WARNING_MARKER.write_text(str(now_s))
+            except OSError:
+                pass
         return None
+
+    return tokens.get("access_token")
 
 
 # --- API ---
