@@ -117,9 +117,10 @@ git clone https://github.com/tschenkster/granola-sync.git ~/granola-sync
 
 ### Step 2: Determine the target directory
 
-Ask the user: *"Where should your Granola meeting notes be saved? (Default: `~/Documents/Granola Meetings`)"*
+Ask the user: _"Where should your Granola meeting notes be saved? (Default: `~/Documents/Granola Meetings`)"_
 
 Common choices:
+
 - Local only: `~/Documents/Granola Meetings`
 - iCloud Drive (synced across Apple devices): `~/Library/Mobile Documents/com~apple~CloudDocs/Granola Meetings`
 - Google Drive (if installed): `~/Library/CloudStorage/GoogleDrive-<email>/My Drive/Granola Meetings`
@@ -166,6 +167,7 @@ Expected output: `<PID-or-dash>  0  com.user.granola-sync`. The middle column (`
 ### Step 6: Report back to the user
 
 Tell the user:
+
 - The target folder where notes will accumulate.
 - That the sync runs every 15 minutes.
 - That **Granola must remain open on their Mac** (or run on login) — otherwise the auth token expires and syncs will fail silently after ~6 hours.

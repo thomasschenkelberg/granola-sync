@@ -4,7 +4,7 @@ Sync your [Granola](https://granola.ai) AI meeting notes to a local folder as Ma
 
 ## Why this exists
 
-Granola is a fantastic AI notetaker, but it's a **cloud-first app**. Your meeting summaries and transcripts live on Granola's servers. The Mac app caches *some* metadata locally (in `~/Library/Application Support/Granola/`), but the actual readable content sits behind their API and inside an opaque LevelDB / Yjs CRDT store on disk — you cannot just `grep` your meeting notes.
+Granola is a fantastic AI notetaker, but it's a **cloud-first app**. Your meeting summaries and transcripts live on Granola's servers. The Mac app caches _some_ metadata locally (in `~/Library/Application Support/Granola/`), but the actual readable content sits behind their API and inside an opaque LevelDB / Yjs CRDT store on disk — you cannot just `grep` your meeting notes.
 
 That's a problem if you want to:
 
@@ -71,12 +71,12 @@ python3 granola_sync.py
 
 All optional, all via environment variables:
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `GRANOLA_SYNC_TARGET_DIR` | `~/Documents/Granola Meetings` | Where `.md` files are written. Set this to an iCloud or Google Drive path if you want sync across devices. |
-| `GRANOLA_SYNC_INCLUDE_TRANSCRIPT` | `1` | Set to `0` to skip transcripts (smaller files, faster sync). |
-| `GRANOLA_SYNC_STATE_FILE` | `<script-dir>/.sync_state.json` | Where the synced-ID ledger lives. |
-| `GRANOLA_SYNC_LOG_FILE` | `/tmp/granola-sync.log` | Log file path. |
+| Variable                          | Default                         | Purpose                                                                                                    |
+| --------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `GRANOLA_SYNC_TARGET_DIR`         | `~/Documents/Granola Meetings`  | Where `.md` files are written. Set this to an iCloud or Google Drive path if you want sync across devices. |
+| `GRANOLA_SYNC_INCLUDE_TRANSCRIPT` | `1`                             | Set to `0` to skip transcripts (smaller files, faster sync).                                               |
+| `GRANOLA_SYNC_STATE_FILE`         | `<script-dir>/.sync_state.json` | Where the synced-ID ledger lives.                                                                          |
+| `GRANOLA_SYNC_LOG_FILE`           | `/tmp/granola-sync.log`         | Log file path.                                                                                             |
 
 ## Caveats
 
