@@ -18,7 +18,7 @@ This guide has two sections: **For humans** and **For AI agents**. The AI agent 
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/tschenkster/granola-sync.git ~/granola-sync
+git clone https://github.com/thomasschenkelberg/granola-sync.git ~/granola-sync
 cd ~/granola-sync
 ```
 
@@ -112,7 +112,7 @@ which /opt/homebrew/bin/python3 \
 Default install location: `~/granola-sync/`. Ask the user if they want a different location before proceeding.
 
 ```bash
-git clone https://github.com/tschenkster/granola-sync.git ~/granola-sync
+git clone https://github.com/thomasschenkelberg/granola-sync.git ~/granola-sync
 ```
 
 ### Step 2: Determine the target directory

@@ -57,7 +57,7 @@ See **[INSTALL.md](INSTALL.md)** for the full setup walkthrough, including a sec
 TL;DR for humans:
 
 ```bash
-git clone https://github.com/tschenkster/granola-sync.git ~/granola-sync
+git clone https://github.com/thomasschenkelberg/granola-sync.git ~/granola-sync
 cd ~/granola-sync
 # 1. Set where notes should go (default: ~/Documents/Granola Meetings)
 export GRANOLA_SYNC_TARGET_DIR="$HOME/Documents/Granola Meetings"
